@@ -207,11 +207,11 @@ static void reporter_thread(void *first, void *second, void *third) {
 }
 
 K_THREAD_DEFINE(sampler_id, SAMPLER_STACK_SIZE, sampler_thread, NULL, NULL, NULL,
-                THREAD_PRIORITY, 0, K_FOREVER);
+                THREAD_PRIORITY, 0, -1);
 K_THREAD_DEFINE(analyzer_id, ANALYZER_STACK_SIZE, analyzer_thread, NULL, NULL, NULL,
-                THREAD_PRIORITY, 0, K_FOREVER);
+                THREAD_PRIORITY, 0, -1);
 K_THREAD_DEFINE(reporter_id, REPORTER_STACK_SIZE, reporter_thread, NULL, NULL, NULL,
-                THREAD_PRIORITY, 0, K_FOREVER);
+                THREAD_PRIORITY, 0, -1);
 
 #if ZLAB_HAS_BUTTON
 static void button_pressed(const struct device *port, struct gpio_callback *callback,
