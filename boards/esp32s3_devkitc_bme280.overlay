@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: Apache-2.0
+#include <zephyr/dt-bindings/pinctrl/esp-pinctrl-common.h>
+#include <zephyr/dt-bindings/pinctrl/esp32s3-pinctrl.h>
+#include <zephyr/dt-bindings/pinctrl/esp32s3-gpio-sigmap.h>
+
+/ {
+  aliases {
+    env-sensor = &zlab_bme280;
+  };
+};
+
+&pinctrl {
+  zlab_i2c0: zlab_i2c0 {
+    group1 {
+      pinmux = <I2C0_SDA_GPIO8>, <I2C0_SCL_GPIO9>;
+      bias-pull-up;
+      drive-open-drain;
+      output-high;
+    };
+  };
+};
+
+&i2c0 {
+  status = "okay";
+  clock-frequency = <I2C_BITRATE_STANDARD>;
+  pinctrl-0 = <&zlab_i2c0>;
+  pinctrl-names = "default";
+
+  zlab_bme280: bme280@76 {
+    compatible = "bosch,bme280";
+    reg = <0x76>;
+    status = "okay";
+  };
+};
+

@@ -1,0 +1,41 @@
+name: Zephyr build and test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout application
+        uses: actions/checkout@v6
+        with:
+          path: app
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Set up Zephyr workspace
+        uses: zephyrproject-rtos/action-zephyr-setup@v1.0.15
+        with:
+          app-path: app
+          toolchains: xtensa-espressif_esp32s3_zephyr-elf
+          sdk-version: 1.0.1
+      - name: Run detector tests on native simulator
+        run: west build -b native_sim/native/64 app/tests/anomaly_detector -d build/test -t run
+      - name: Build complete application on native simulator
+        run: west build -b native_sim/native/64 app -d build/native
+      - name: Build ESP32-S3 firmware with BME280 overlay
+        run: >-
+          west build -b esp32s3_devkitc/esp32s3/procpu app -d build/esp32s3 --
+          -DDTC_OVERLAY_FILE=boards/esp32s3_devkitc_bme280.overlay
+      - name: Upload ESP32-S3 firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: zlab-zephyr-esp32s3-firmware
+          path: |
+            build/esp32s3/zephyr/zephyr.bin
+            build/esp32s3/zephyr/zephyr.elf
+            build/esp32s3/zephyr/zephyr.map
+
