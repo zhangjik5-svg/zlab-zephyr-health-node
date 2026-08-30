@@ -58,4 +58,33 @@ ZTEST(anomaly_detector, test_humidity_limit_triggers_alert) {
   zassert_true(result.abnormal);
 }
 
+ZTEST(anomaly_detector, test_alert_requires_consecutive_samples) {
+  struct anomaly_detector detector;
+  const struct detector_config config = test_config();
+  anomaly_detector_init(&detector, &config);
+  for (int i = 0; i < 5; ++i) {
+    (void)anomaly_detector_process(&detector, 24000, 50000);
+  }
+
+  struct detector_result result =
+      anomaly_detector_process(&detector, 30000, 50000);
+  zassert_equal(result.state, HEALTH_NORMAL);
+  zassert_true(result.abnormal);
+
+  result = anomaly_detector_process(&detector, 24000, 50000);
+  zassert_equal(result.state, HEALTH_NORMAL);
+  zassert_false(result.abnormal);
+}
+
+ZTEST(anomaly_detector, test_invalid_config_uses_safe_defaults) {
+  struct anomaly_detector detector;
+  const struct detector_config invalid = {0};
+  anomaly_detector_init(&detector, &invalid);
+
+  zassert_equal(detector.config.temperature_delta_mc, 2000);
+  zassert_equal(detector.config.humidity_limit_mpercent, 85000);
+  zassert_equal(detector.config.ewma_alpha_permille, 200);
+  zassert_equal(detector.config.calibration_samples, 5);
+}
+
 ZTEST_SUITE(anomaly_detector, NULL, NULL, NULL, NULL, NULL);
